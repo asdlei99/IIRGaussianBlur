@@ -206,7 +206,6 @@ int main(int argc, char **argv) {
     if (argc < 2) {
         printf("usage: %s   image \n ", argv[0]);
         printf("eg: %s   d:\\image.jpg \n ", argv[0]);
-
         return (0);
     }
     char *in_file = argv[1];
@@ -228,13 +227,12 @@ int main(int argc, char **argv) {
     printf("load time: %d ms.\n ", (int) (nLoadTime * 1000));
     if ((Channels != 0) && (Width != 0) && (Height != 0)) {
         float *outputImg = (float *) stbi__malloc(Width * Channels * Height * sizeof(float));
-        if (inputImage) {
-            for (int i = 0; i < Width * Channels * Height; ++i) {
-                outputImg[i] = inputImage[i];
-            }
-
-        } else {
-            printf("load: %s fail!\n ", in_file);
+        if (inputImage == NULL || outputImg == NULL) {
+            fprintf(stderr, "load: %s fail!\n ", in_file);
+            return -1;
+        }
+        for (int i = 0; i < Width * Channels * Height; ++i) {
+            outputImg[i] = inputImage[i];
         }
         float Sigma = 3.0f;
         startTime = now();
@@ -247,22 +245,13 @@ int main(int argc, char **argv) {
         startTime = now();
         saveImage(out_file, Width, Height, Channels, inputImage);
         double nSaveTime = calcElapsed(startTime, now());
-
         printf("save time: %d ms.\n ", (int) (nSaveTime * 1000));
-
-        if (outputImg) {
-            stbi_image_free(outputImg);
-        }
-
-        if (inputImage) {
-            stbi_image_free(inputImage);
-        }
+        stbi_image_free(outputImg);
+        stbi_image_free(inputImage);
     } else {
-        printf("load: %s fail!\n", in_file);
+        fprintf(stderr, "load: %s fail!\n", in_file);
     }
-
-    getchar();
     printf("press any key to exit. \n");
-
+    getchar();
     return (EXIT_SUCCESS);
 }
